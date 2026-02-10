@@ -277,7 +277,7 @@ class App(ctk.CTk):
             save_wav = bool(self.chk_wav.get())
 
             if self.is_batch:
-                self._run_batch(encoder, fmt, quality, model, save_wav)
+                self._run_batch(self.selected_path, encoder, fmt, quality, model, save_wav)
             else:
                 self._run_single(
                     self.selected_path, encoder, fmt, quality, model, save_wav
