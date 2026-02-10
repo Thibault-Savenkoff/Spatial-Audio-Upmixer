@@ -1,0 +1,9 @@
+numpy
+scipy
+soundfile
+torch==2.5.1
+torchaudio==2.5.1
+demucs
+google-genai
+customtkinter
+python-dotenv
