@@ -5,7 +5,7 @@ Modern dark-mode interface with:
   - File / folder selection
   - Format selector (7.1.4 / 5.1 / Both)
   - Quality presets (Low / Medium / High)
-  - Demucs model selector
+  - Separation model selector
   - Progress tracking with step indicators
   - Real-time log output
 """
@@ -22,8 +22,8 @@ from tkinter import filedialog
 
 from spatial_audio.config import (
     PRESETS,
-    DEMUCS_MODELS,
-    DEFAULT_DEMUCS_MODEL,
+    SEPARATION_MODELS,
+    DEFAULT_MODEL,
     SAMPLE_RATE,
 )
 from spatial_audio.analyzer import analyse, adapt_preset
@@ -164,10 +164,10 @@ class App(ctk.CTk):
             row=1, column=0, padx=(15, 5), pady=(0, 8), sticky="w"
         )
         self.seg_model = ctk.CTkSegmentedButton(
-            frame, values=list(DEMUCS_MODELS.keys())
+            frame, values=list(SEPARATION_MODELS.keys())
         )
         self.seg_model.grid(row=1, column=1, padx=5, pady=(0, 8), sticky="w")
-        self.seg_model.set(DEFAULT_DEMUCS_MODEL)
+        self.seg_model.set(DEFAULT_MODEL)
 
         self.chk_wav = ctk.CTkCheckBox(frame, text="Save WAV master")
         self.chk_wav.grid(
@@ -318,7 +318,7 @@ class App(ctk.CTk):
         preset = adapt_preset(base_preset, analysis)
 
         # Step 2 - Separation
-        self._update_progress("Separating stems (Demucs)...", 0.10)
+        self._update_progress("Separating stems...", 0.10)
         stems = separate(
             input_path, model_name=model, target_sr=SAMPLE_RATE,
             progress_callback=lambda m: print(m),

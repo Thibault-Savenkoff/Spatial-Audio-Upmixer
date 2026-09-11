@@ -4,4 +4,6 @@ soundfile
 torch==2.5.1
 torchaudio==2.5.1
 demucs==4.0.1
+audio-separator[cpu]
+audioread
 customtkinter

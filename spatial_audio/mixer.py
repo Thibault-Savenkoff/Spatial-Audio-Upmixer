@@ -1,7 +1,8 @@
 """
 7.1.4 Spatial Audio Mixer — the core engine.
 
-Takes four Demucs stems (vocals, drums, bass, other) and mixes them
+Takes the separated stems (vocals, drums, bass, other, plus backing
+vocals, guitar and piano with the RoFormer back-end) and mixes them
 into a 12-channel 7.1.4 spatial audio signal optimised for binaural
 rendering on AirPods Pro 3.
 
@@ -26,6 +27,9 @@ Design principles
    | Bass      | FC (>80 Hz) + LFE (<80) | —                        |
    | Drums     | FL/FR (>80 Hz) + LFE  | TFL/TFR (shimmer, ≤10 %) |
    | Other     | SL/SR                  | BL/BR, TFL–TBR (≤25 %)  |
+   | Backing   | SL/SR                  | FL/FR, BL/BR, TFL/TFR    |
+   | Guitar    | FL/FR                  | SL/SR                    |
+   | Piano     | FL/FR                  | TFL/TFR                  |
 """
 
 from __future__ import annotations
@@ -139,6 +143,44 @@ def mix_to_714(
     )
 
     # ------------------------------------------------------------------
+    # 1b. BACKING VOCALS / AD-LIBS → SL/SR + FL/FR + BL/BR + TFL/TFR
+    # ------------------------------------------------------------------
+    if stems.backing is not None:
+        _log("  Routing backing vocals / ad-libs...")
+        back_level = 10 ** (preset.backing_level_db / 20)
+        back_l = xo_lfe.highpass(get_left(stems.backing)) * back_level
+        back_r = xo_lfe.highpass(get_right(stems.backing)) * back_level
+
+        output[:, CH_SL] += decorr.process_blended(
+            back_l * preset.backing_side_gain, D_SL, blend=0.3
+        )
+        output[:, CH_SR] += decorr.process_blended(
+            back_r * preset.backing_side_gain, D_SR, blend=0.3
+        )
+        output[:, CH_FL] += back_l * preset.backing_front_bleed
+        output[:, CH_FR] += back_r * preset.backing_front_bleed
+
+        rear_delay = preset.rear_extra_delay_ms
+        output[:, CH_BL] += decorr.process_blended(
+            apply_delay(back_l * preset.backing_rear_gain, rear_delay, sr),
+            D_BL, blend=DECORR_BLEND_SURROUND,
+        )
+        output[:, CH_BR] += decorr.process_blended(
+            apply_delay(back_r * preset.backing_rear_gain, rear_delay, sr),
+            D_BR, blend=DECORR_BLEND_SURROUND,
+        )
+
+        if preset.backing_height_gain > 0.01:
+            output[:, CH_TFL] += decorr.process_blended(
+                xo_height.highpass(back_l) * preset.backing_height_gain,
+                D_TFL, blend=DECORR_BLEND_HEIGHT,
+            )
+            output[:, CH_TFR] += decorr.process_blended(
+                xo_height.highpass(back_r) * preset.backing_height_gain,
+                D_TFR, blend=DECORR_BLEND_HEIGHT,
+            )
+
+    # ------------------------------------------------------------------
     # 2. BASS → FC (>80Hz) + LFE (<80Hz)
     # ------------------------------------------------------------------
     _log("  Routing bass...")
@@ -248,6 +290,35 @@ def mix_to_714(
     if preset.other_front_bleed > 0.01:
         output[:, CH_FL] += other_left_hp * preset.other_front_bleed
         output[:, CH_FR] += other_right_hp * preset.other_front_bleed
+
+    # ------------------------------------------------------------------
+    # 4b. GUITAR → FL/FR + SL/SR,  PIANO → FL/FR + TFL/TFR
+    # ------------------------------------------------------------------
+    if stems.guitar is not None:
+        _log("  Routing guitar...")
+        gtr_l = xo_lfe.highpass(get_left(stems.guitar))
+        gtr_r = xo_lfe.highpass(get_right(stems.guitar))
+        output[:, CH_FL] += gtr_l * preset.guitar_front_gain
+        output[:, CH_FR] += gtr_r * preset.guitar_front_gain
+        output[:, CH_SL] += decorr.process_blended(
+            apply_delay(gtr_l * preset.guitar_side_gain, preset.surround_delay_ms, sr),
+            D_SL, blend=DECORR_BLEND_SURROUND,
+        )
+        output[:, CH_SR] += decorr.process_blended(
+            apply_delay(gtr_r * preset.guitar_side_gain, preset.surround_delay_ms, sr),
+            D_SR, blend=DECORR_BLEND_SURROUND,
+        )
+
+    if stems.piano is not None:
+        _log("  Routing piano...")
+        pno_l = xo_lfe.highpass(get_left(stems.piano))
+        pno_r = xo_lfe.highpass(get_right(stems.piano))
+        output[:, CH_FL] += pno_l * preset.piano_front_gain
+        output[:, CH_FR] += pno_r * preset.piano_front_gain
+        if preset.piano_height_gain > 0.01:
+            pno_air = xo_height.highpass(to_mono(stems.piano)) * preset.piano_height_gain
+            output[:, CH_TFL] += decorr.process_blended(pno_air, D_TFL, blend=DECORR_BLEND_HEIGHT)
+            output[:, CH_TFR] += decorr.process_blended(pno_air, D_TFR, blend=DECORR_BLEND_HEIGHT)
 
     # ------------------------------------------------------------------
     # 5. Post-processing

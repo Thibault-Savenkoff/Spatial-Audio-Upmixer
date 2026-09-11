@@ -92,6 +92,21 @@ class MixPreset:
     other_height_gain: float = 0.22       # Heavily decorrelated, >500 Hz → heights
     other_front_bleed: float = 0.15       # Slight presence kept in FL/FR
 
+    # Backing vocals / ad-libs (RoFormer only). Gains below are the 0 dB
+    # routing; backing_level_db scales them all. Default -1.5 dB: once moved
+    # away from the lead, the backs are unmasked and sound louder.
+    backing_level_db: float = -1.5
+    backing_side_gain: float = 0.55       # → SL/SR, around the listener
+    backing_rear_gain: float = 0.35       # → BL/BR
+    backing_height_gain: float = 0.20     # >500 Hz → TFL/TFR
+    backing_front_bleed: float = 0.25     # keeps them tied to the lead in FL/FR
+
+    # Guitar / piano (RoFormer only)
+    guitar_front_gain: float = 0.55       # → FL/FR
+    guitar_side_gain: float = 0.45        # decorrelated, delayed → SL/SR
+    piano_front_gain: float = 0.60        # → FL/FR
+    piano_height_gain: float = 0.15       # >500 Hz → TFL/TFR
+
     # Surround delay
     surround_delay_ms: float = 15.0       # Haas-effect delay for surrounds
     rear_extra_delay_ms: float = 8.0      # Additional delay for BL/BR vs SL/SR
@@ -133,6 +148,23 @@ DEMUCS_MODELS = {
     "htdemucs_ft": "Fine-tuned Hybrid Transformer (better quality)",
 }
 DEFAULT_DEMUCS_MODEL = "htdemucs_ft"
+
+# ---------------------------------------------------------------------------
+# RoFormer models (v3, run through audio-separator)
+# ---------------------------------------------------------------------------
+ROFORMER_STEM_MODEL = "BS-Roformer-SW.ckpt"   # 6 stems: vocals bass drums guitar piano other
+KARAOKE_MODELS = [
+    "mel_band_roformer_karaoke_aufr33_viperx_sdr_10.1956.ckpt",   # cleanest by ear
+    "mel_band_roformer_karaoke_becruily.ckpt",   # leaks more lead-vocal noise into the backs
+    "bs_roformer_karaoke_frazer_becruily.ckpt",
+]
+DEFAULT_KARAOKE_MODEL = KARAOKE_MODELS[0]      # lead vocal vs backing vocals / ad-libs
+
+SEPARATION_MODELS = {
+    "roformer": "BS-RoFormer 6 stems + lead/backing split (best, slow on CPU)",
+    **DEMUCS_MODELS,
+}
+DEFAULT_MODEL = "roformer"
 
 # ---------------------------------------------------------------------------
 # FFmpeg channel layout strings

@@ -12,6 +12,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import os
 import sys
 import time
@@ -20,8 +21,10 @@ import soundfile as sf
 
 from spatial_audio.config import (
     PRESETS,
-    DEFAULT_DEMUCS_MODEL,
-    DEMUCS_MODELS,
+    DEFAULT_MODEL,
+    SEPARATION_MODELS,
+    KARAOKE_MODELS,
+    DEFAULT_KARAOKE_MODEL,
     SAMPLE_RATE,
 )
 from spatial_audio.analyzer import analyse, adapt_preset
@@ -41,6 +44,9 @@ def process_file(
     model: str,
     save_wav: bool,
     encoder: Encoder,
+    karaoke_model: str = DEFAULT_KARAOKE_MODEL,
+    stems_dir: str | None = None,
+    backing_db: float | None = None,
 ) -> None:
     """Process a single audio file through the full pipeline."""
     start_time = time.time()
@@ -70,10 +76,15 @@ def process_file(
     # --- Step 2: Adapt preset ---
     base_preset = PRESETS[quality]
     preset = adapt_preset(base_preset, analysis)
+    if backing_db is not None:
+        preset = dataclasses.replace(preset, backing_level_db=backing_db)
 
     # --- Step 3: Stem separation ---
-    print("\n--- Step 2: Stem separation (Demucs) ---")
-    stems = separate(input_path, model_name=model, target_sr=SAMPLE_RATE)
+    print(f"\n--- Step 2: Stem separation ({model}) ---")
+    stems = separate(
+        input_path, model_name=model, target_sr=SAMPLE_RATE,
+        karaoke_model=karaoke_model, stems_dir=stems_dir,
+    )
 
     # --- Step 4: Spatial mixing ---
     print("\n--- Step 3: Spatial mixing (7.1.4) ---")
@@ -143,9 +154,24 @@ Examples:
     )
     parser.add_argument(
         "-m", "--model",
-        choices=list(DEMUCS_MODELS.keys()),
-        default=DEFAULT_DEMUCS_MODEL,
-        help=f"Demucs model (default: {DEFAULT_DEMUCS_MODEL})",
+        choices=list(SEPARATION_MODELS.keys()),
+        default=DEFAULT_MODEL,
+        help=f"Separation model (default: {DEFAULT_MODEL})",
+    )
+    parser.add_argument(
+        "-k", "--karaoke-model",
+        choices=KARAOKE_MODELS,
+        default=DEFAULT_KARAOKE_MODEL,
+        help="RoFormer model splitting lead / backing vocals (roformer only)",
+    )
+    parser.add_argument(
+        "--stems-dir",
+        help="Keep RoFormer stems here and reuse them on later runs",
+    )
+    parser.add_argument(
+        "--backing-db",
+        type=float,
+        help="Backing vocals level vs the original song, in dB (default: -1.5)",
     )
     parser.add_argument(
         "--save-wav",
@@ -195,6 +221,9 @@ Examples:
                     args.model,
                     args.save_wav,
                     encoder,
+                    args.karaoke_model,
+                    args.stems_dir,
+                    args.backing_db,
                 )
             except Exception as e:
                 print(f"Error processing {f}: {e}")
@@ -208,6 +237,9 @@ Examples:
             args.model,
             args.save_wav,
             encoder,
+            args.karaoke_model,
+            args.stems_dir,
+            args.backing_db,
         )
 
 
