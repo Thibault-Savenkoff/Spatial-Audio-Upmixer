@@ -58,7 +58,8 @@ Backing, guitar and piano only exist with the RoFormer back-end. The backing gai
 - **Python 3.10+**
 - **FFmpeg** — must be in PATH ([download](https://www.gyan.dev/ffmpeg/builds/))
 - **~2.5 GB disk** for the RoFormer models (downloaded automatically on first run into `~/.cache/audio-separator-models`)
-- **GPU strongly recommended**: on a laptop CPU (i7-12650H), RoFormer (6 stems + lead/backing split) takes about **20× the track length** (a 3-minute song ≈ 1 hour). Demucs is several times faster.
+- **GPU strongly recommended**. For a 4:34 song (6 stems + lead/backing split): **25 min** on an Apple Silicon Mac (MPS, 16 GB), **1 h 57** on a laptop CPU (i7-12650H). Demucs is several times faster.
+- **16 GB RAM minimum** (peak ~9 GB with the default karaoke model). The `becruily` karaoke model needs more: on a 16 GB Mac it swaps and becomes unusable.
 
 ## Installation
 
