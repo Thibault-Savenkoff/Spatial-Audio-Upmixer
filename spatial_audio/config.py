@@ -154,8 +154,8 @@ DEFAULT_DEMUCS_MODEL = "htdemucs_ft"
 # ---------------------------------------------------------------------------
 ROFORMER_STEM_MODEL = "BS-Roformer-SW.ckpt"   # 6 stems: vocals bass drums guitar piano other
 KARAOKE_MODELS = [
-    "mel_band_roformer_karaoke_aufr33_viperx_sdr_10.1956.ckpt",   # cleanest by ear
-    "mel_band_roformer_karaoke_becruily.ckpt",   # leaks more lead-vocal noise into the backs
+    "mel_band_roformer_karaoke_becruily.ckpt",   # as clean as aufr33 by ear, ~4x faster on Apple MPS
+    "mel_band_roformer_karaoke_aufr33_viperx_sdr_10.1956.ckpt",
     "bs_roformer_karaoke_frazer_becruily.ckpt",
 ]
 DEFAULT_KARAOKE_MODEL = KARAOKE_MODELS[0]      # lead vocal vs backing vocals / ad-libs

@@ -59,7 +59,7 @@ Backing, guitar and piano only exist with the RoFormer back-end. The backing gai
 - **FFmpeg** — must be in PATH ([download](https://www.gyan.dev/ffmpeg/builds/))
 - **~2.5 GB disk** for the RoFormer models (downloaded automatically on first run into `~/.cache/audio-separator-models`)
 - **GPU strongly recommended**. For a 4:34 song (6 stems + lead/backing split): **25 min** on an Apple Silicon Mac (MPS, 16 GB), **1 h 57** on a laptop CPU (i7-12650H). Demucs is several times faster.
-- **16 GB RAM minimum** (peak ~9 GB with the default karaoke model). The `becruily` karaoke model needs more: on a 16 GB Mac it swaps and becomes unusable.
+- **16 GB RAM minimum** (peak ~9 GB on CPU). On a 16 GB Mac, the becruily karaoke model takes 2 min for a 4:34 song, the aufr33 one 8.5 min.
 
 ## Installation
 
@@ -110,7 +110,7 @@ python main.py song.flac --format 5.1 --model htdemucs
 python main.py ./music/ --format both --save-wav
 
 # Try another lead/backing vocal model
-python main.py song.wav -k mel_band_roformer_karaoke_becruily.ckpt
+python main.py song.wav -k mel_band_roformer_karaoke_aufr33_viperx_sdr_10.1956.ckpt
 
 # Keep the stems, then retry other settings in seconds instead of re-separating
 python main.py song.wav --stems-dir ./stems -o ./out_default
@@ -127,7 +127,7 @@ python main.py song.wav -o ./output/
 | `-f, --format` | `7.1.4`, `5.1`, `both` | `7.1.4` | Output format |
 | `-q, --quality` | `low`, `medium`, `high` | `medium` | Processing quality |
 | `-m, --model` | `roformer`, `htdemucs`, `htdemucs_ft` | `roformer` | Separation model |
-| `-k, --karaoke-model` | see `KARAOKE_MODELS` in `config.py` | aufr33/viperx Mel-RoFormer | Lead / backing vocal split (roformer only) |
+| `-k, --karaoke-model` | see `KARAOKE_MODELS` in `config.py` | becruily Mel-RoFormer | Lead / backing vocal split (roformer only) |
 | `--stems-dir` | path | off | Keep RoFormer stems and reuse them on later runs |
 | `--backing-db` | dB | `-1.5` | Backing vocals level vs the original song |
 | `-o, --output` | path | same as input | Output directory |
