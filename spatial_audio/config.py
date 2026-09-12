@@ -160,6 +160,13 @@ KARAOKE_MODELS = [
 ]
 DEFAULT_KARAOKE_MODEL = KARAOKE_MODELS[0]      # lead vocal vs backing vocals / ad-libs
 
+# Frames per chunk for models whose default chunk is too long: on Apple MPS the
+# attention matrix grows with the square of it (becruily: ~11 s chunks need
+# >2 GB per attention call and swap a 16 GB Mac; 256 frames ≈ 2.6 s).
+ROFORMER_SEGMENT_SIZE = {
+    "mel_band_roformer_karaoke_becruily.ckpt": 256,
+}
+
 SEPARATION_MODELS = {
     "roformer": "BS-RoFormer 6 stems + lead/backing split (best, slow on CPU)",
     **DEMUCS_MODELS,

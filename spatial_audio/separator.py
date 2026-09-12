@@ -29,7 +29,7 @@ from math import gcd
 
 from .config import (
     DEFAULT_MODEL, DEFAULT_KARAOKE_MODEL, DEMUCS_MODELS,
-    ROFORMER_STEM_MODEL, SAMPLE_RATE,
+    ROFORMER_SEGMENT_SIZE, ROFORMER_STEM_MODEL, SAMPLE_RATE,
 )
 
 MODEL_DIR = os.path.expanduser("~/.cache/audio-separator-models")
@@ -118,7 +118,8 @@ def _run_roformer(model_file: str, input_path: str, out_dir: str, overlap: int) 
         log_level=40,
         normalization_threshold=1.0,   # keep the stems' relative levels
         mdxc_params={
-            "segment_size": 256, "override_model_segment_size": False,
+            "segment_size": ROFORMER_SEGMENT_SIZE.get(model_file, 256),
+            "override_model_segment_size": model_file in ROFORMER_SEGMENT_SIZE,
             "batch_size": 1, "overlap": overlap, "pitch_shift": 0,
         },
     )
