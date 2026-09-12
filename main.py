@@ -47,6 +47,7 @@ def process_file(
     karaoke_model: str = DEFAULT_KARAOKE_MODEL,
     stems_dir: str | None = None,
     backing_db: float | None = None,
+    overrides: dict | None = None,
 ) -> None:
     """Process a single audio file through the full pipeline."""
     start_time = time.time()
@@ -78,6 +79,8 @@ def process_file(
     preset = adapt_preset(base_preset, analysis)
     if backing_db is not None:
         preset = dataclasses.replace(preset, backing_level_db=backing_db)
+    if overrides:
+        preset = dataclasses.replace(preset, **overrides)
 
     # --- Step 3: Stem separation ---
     print(f"\n--- Step 2: Stem separation ({model}) ---")
@@ -174,12 +177,27 @@ Examples:
         help="Backing vocals level vs the original song, in dB (default: -1.5)",
     )
     parser.add_argument(
+        "--set",
+        action="append",
+        default=[],
+        metavar="NAME=VALUE",
+        help="Override a MixPreset field, e.g. --set other_front_bleed=0.35 (repeatable)",
+    )
+    parser.add_argument(
         "--save-wav",
         action="store_true",
         help="Also save a lossless 7.1.4 WAV master",
     )
 
     args = parser.parse_args()
+
+    fields = {f.name: f.type for f in dataclasses.fields(PRESETS["medium"])}
+    overrides = {}
+    for item in args.set:
+        name, _, value = item.partition("=")
+        if name not in fields or not value:
+            parser.error(f"--set {item}: unknown field (see MixPreset in spatial_audio/config.py)")
+        overrides[name] = int(value) if fields[name] in (int, "int") else float(value)
 
     # Validate input
     if not os.path.exists(args.input):
@@ -224,6 +242,7 @@ Examples:
                     args.karaoke_model,
                     args.stems_dir,
                     args.backing_db,
+                    overrides,
                 )
             except Exception as e:
                 print(f"Error processing {f}: {e}")
@@ -240,6 +259,7 @@ Examples:
             args.karaoke_model,
             args.stems_dir,
             args.backing_db,
+            overrides,
         )
 
 

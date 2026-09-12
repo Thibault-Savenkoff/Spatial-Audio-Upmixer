@@ -61,16 +61,19 @@ class Crossover:
     # ------------------------------------------------------------------
     @staticmethod
     def _apply(fir: np.ndarray, x: np.ndarray) -> np.ndarray:
-        """Convolve *fir* with signal *x* using FFT, preserving length."""
+        """Convolve *fir* with signal *x* using FFT, preserving length.
+
+        The linear-phase group delay ((taps-1)/2 samples) is removed, so
+        filtered paths stay time-aligned with unfiltered ones.
+        """
+        delay = (len(fir) - 1) // 2
+        n = x.shape[0]
         if x.ndim == 1:
-            out = fftconvolve(x, fir, mode="full")
-            # Trim to original length (introduces group-delay shift)
-            return out[: x.shape[0]]
+            return fftconvolve(x, fir, mode="full")[delay: delay + n]
         # Multi-channel: filter each channel independently
         out = np.empty_like(x)
         for ch in range(x.shape[1]):
-            tmp = fftconvolve(x[:, ch], fir, mode="full")
-            out[:, ch] = tmp[: x.shape[0]]
+            out[:, ch] = fftconvolve(x[:, ch], fir, mode="full")[delay: delay + n]
         return out
 
 

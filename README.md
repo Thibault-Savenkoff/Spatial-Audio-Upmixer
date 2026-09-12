@@ -130,6 +130,7 @@ python main.py song.wav -o ./output/
 | `-k, --karaoke-model` | see `KARAOKE_MODELS` in `config.py` | becruily Mel-RoFormer | Lead / backing vocal split (roformer only) |
 | `--stems-dir` | path | off | Keep RoFormer stems and reuse them on later runs |
 | `--backing-db` | dB | `-1.5` | Backing vocals level vs the original song |
+| `--set` | `NAME=VALUE` | — | Override any `MixPreset` gain/delay from `config.py` (repeatable) |
 | `-o, --output` | path | same as input | Output directory |
 | `--save-wav` | flag | off | Also save lossless WAV master |
 
