@@ -90,7 +90,7 @@ class MixPreset:
     other_side_gain: float = 0.65         # "Other" stem → SL/SR (primary surround)
     other_rear_gain: float = 0.40         # Decorrelated → BL/BR
     other_height_gain: float = 0.22       # Heavily decorrelated, >500 Hz → heights
-    other_front_bleed: float = 0.15       # Slight presence kept in FL/FR
+    other_front_bleed: float = 0.35       # Beat kept in front (Atmos rap style)
 
     # Backing vocals / ad-libs (RoFormer only). Gains below are the 0 dB
     # routing; backing_level_db scales them all. Default -1.5 dB: once moved
