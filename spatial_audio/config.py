@@ -99,6 +99,7 @@ class MixPreset:
     backing_side_gain: float = 0.55       # → SL/SR, around the listener
     backing_rear_gain: float = 0.35       # → BL/BR
     backing_height_gain: float = 0.20     # >500 Hz → TFL/TFR
+    backing_top_rear_gain: float = 0.0    # >500 Hz → TBL/TBR (top, behind)
     backing_front_bleed: float = 0.25     # keeps them tied to the lead in FL/FR
 
     # Guitar / piano (RoFormer only)

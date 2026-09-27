@@ -180,6 +180,16 @@ def mix_to_714(
                 D_TFR, blend=DECORR_BLEND_HEIGHT,
             )
 
+        if preset.backing_top_rear_gain > 0.01:
+            output[:, CH_TBL] += decorr.process_blended(
+                xo_height.highpass(back_l) * preset.backing_top_rear_gain,
+                D_TBL, blend=DECORR_BLEND_HEIGHT,
+            )
+            output[:, CH_TBR] += decorr.process_blended(
+                xo_height.highpass(back_r) * preset.backing_top_rear_gain,
+                D_TBR, blend=DECORR_BLEND_HEIGHT,
+            )
+
     # ------------------------------------------------------------------
     # 2. BASS → FC (>80Hz) + LFE (<80Hz)
     # ------------------------------------------------------------------
