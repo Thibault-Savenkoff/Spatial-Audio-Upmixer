@@ -76,6 +76,7 @@ class MixPreset:
     # Vocals
     vocal_center_gain: float = 0.90       # Vocals → FC  (slightly below unity to sit naturally)
     vocal_width_bleed: float = 0.12       # Decorrelated stereo-side component → FL/FR
+    vocal_phantom: float = 1.0            # 0 = vocals in FC, 1 = phantom center in FL/FR (measured on real Atmos mixes)
 
     # Bass
     bass_lfe_gain: float = 0.80           # Bass sub (<80 Hz) → LFE
@@ -96,11 +97,11 @@ class MixPreset:
     # routing; backing_level_db scales them all. Default -1.5 dB: once moved
     # away from the lead, the backs are unmasked and sound louder.
     backing_level_db: float = -1.5
-    backing_side_gain: float = 0.55       # → SL/SR, around the listener
-    backing_rear_gain: float = 0.35       # → BL/BR
+    backing_side_gain: float = 0.25       # → SL/SR, around the listener
+    backing_rear_gain: float = 0.10       # → BL/BR
     backing_height_gain: float = 0.20     # >500 Hz → TFL/TFR
     backing_top_rear_gain: float = 0.0    # >500 Hz → TBL/TBR (top, behind)
-    backing_front_bleed: float = 0.25     # keeps them tied to the lead in FL/FR
+    backing_front_bleed: float = 0.50     # keeps them tied to the lead in FL/FR
 
     # Guitar / piano (RoFormer only)
     guitar_front_gain: float = 0.55       # → FL/FR

@@ -128,8 +128,11 @@ def mix_to_714(
     vocal_mid, vocal_side = mid_side(stems.vocals)
 
     # Center: mono sum of vocals, highpass to keep LFE-range out
+    # vocal_phantom moves it from FC to a phantom center in FL/FR (equal power)
     vocal_center = xo_lfe.highpass(vocal_mid) * preset.vocal_center_gain
-    output[:, CH_FC] += vocal_center
+    output[:, CH_FC] += vocal_center * np.sqrt(1 - preset.vocal_phantom)
+    output[:, CH_FL] += vocal_center * np.sqrt(preset.vocal_phantom / 2)
+    output[:, CH_FR] += vocal_center * np.sqrt(preset.vocal_phantom / 2)
 
     # Width: decorrelated side component at low level to FL/FR
     # This gives vocals natural stereo presence without being "too forward"
